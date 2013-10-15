@@ -38,7 +38,7 @@ servomove
 	HSERVO[base\0\0,shoulder\0\0,elbow\0\0,wrist\0\0,hand\0\0,grip\0\0]
 	pause 1000
 	;shoulder range movement
-	HSERVO[base\0\0,shoulder\-12000\0,elbow\0\0,wrist\0\0,hand\0\0,grip\0\0]
+	HSERVO[base\0\0,shoulder\-12000\0,elbow\12000\0,wrist\0\0,hand\0\0,grip\0\0]
 	pause 1000
 	HSERVO[base\0\0,shoulder\12000\0,elbow\0\0,wrist\0\0,hand\0\0,grip\0\0]
 	pause 1000
