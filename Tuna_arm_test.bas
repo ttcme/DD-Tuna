@@ -47,65 +47,61 @@ nfsh con 740
 ngh con 784
 ngsh con 830
 nah con 880
-quiet con 0
+quiet con 1
 
-notes Var long (18,1)
+notes Var long (18)
 nleng Var long (18)
 
-notes(0,0) = na
-notes(1,1) = 500
-notes(1,0) = na
-notes(1,1) = 500
-notes(2,0) = na
-notes(2,1) = 500
-notes(3,0) = nf
-notes(3,1) = 350
-notes(4,0) = nch
-notes(4,1) = 150
-notes(5,0) = na
-notes(5,1) = 500
-notes(6,0) = nf
-notes(6,1) = 350
-notes(7,0) = nch
-notes(7,1) = 150
-notes(8,0) = na
-notes(8,1) = 650
+notes(0) = na
+nleng(0) = 500
+notes(1) = na
+nleng(1) = 500
+notes(2) = na
+nleng(2) = 500
+notes(3) = nf
+nleng(3) = 350
+notes(4) = nch
+nleng(4) = 150
+notes(5) = na
+nleng(5) = 500
+notes(6) = nf
+nleng(6) = 350
+notes(7) = nch
+nleng(7) = 150
+notes(8) = na
+nleng(8) = 650
 
-notes(9,0) = quiet
-notes(9,1) = 150
+notes(9) = quiet
+nleng(9) = 150
 
-notes(10,0) = neh
-notes(10,1) = 500
-notes(11,0) = neh
-notes(11,1) = 500
-notes(12,0) = neh
-notes(12,1) = 500
-notes(13,0) = nfh
-notes(13,1) = 350
-notes(14,0) = nch
-notes(14,1) = 150
-notes(15,0) = ngs
-notes(15,1) = 500
-notes(16,0) = nf
-notes(16,1) = 350
-notes(17,0) = nch
-notes(17,1) = 150
-notes(18,0) = na
-notes(18,1) = 650
+notes(10) = neh
+nleng(10) = 500
+notes(11) = neh
+nleng(11) = 500
+notes(12) = neh
+nleng(12) = 500
+notes(13) = nfh
+nleng(13) = 350
+notes(14) = nch
+nleng(14) = 150
+notes(15) = ngs
+nleng(15) = 500
+notes(16) = nf
+nleng(16) = 350
+notes(17) = nch
+nleng(17) = 150
+notes(18) = na
+nleng(18) = 650
 
 
 ;Initial test mode selection. Acts as a menu for the other test modes
 Startup
 Serout s_out,i9600,["Select mode",13]
 mode_select
-	if button_A = 0 
-		goto servo_test
-	elseif button_B = 0
-		goto motor_test
-	elseif button_C = 0
-		goto sound_test
-	else
-		goto mode_select
+	if in12 = 0 then servo_test 
+	if in13 = 0 then motor_test
+	if in14 = 0 then sound_test
+	goto mode_select
 	
 ;start of servo testing
 ;testes each servos range individually
@@ -153,13 +149,15 @@ servo_test
 	pause 1000
 	HSERVO[base\0\0,shoulder\0\0,elbow\0\0,wrist\0\0,hand\0\0,grip\12000\0]
 	pause 1000
-	goto mode_select
+	;reset the arm postion to compact space
+	HSERVO[base\0\0,shoulder\12000\0,elbow\12000\0,wrist\-6000\0,hand\0\0,grip\0\0]
+	goto Startup
 	
 motor_test
 ;to test thet each motor can rotate freely from full reverse to full forward
 	Serout s_out,i9600,["Beggining motor test",13]
 	speed var long
-	For speed = -5000 to 5000 step 50
+	For speed = -5000 to 5000 step 50 ;to allow gradiented movement
 	HSERVO [0\(speed*2)\0,1\(speed*-2)\0]
 	;FOR speed = 1 to 127
 	;serout 0,i9600,[speed]
@@ -167,14 +165,20 @@ motor_test
 	pause 200
 	serout s_out ,i9600,[DEC speed,13]
 	next
-goto mode_select
+	;full reverse to full forward
+	HSERVO [0\-5000\0,1\-5000\0]
+	pause 1000
+	Hservo [0\5000\0,1\5000\0]
+	pause 1000
+	HSERVO [0\0\0,1\0\0] ;stop
+goto Startup
 
 sound_test ;plays the imperial march in 8 bit
 	Serout s_out,i9600,["Feel the FORCE!",13]
 	note_numb var byte
-		for note_numb 0 to 18
-			sound speaker, [notes(note_numb,0)\notes(note_numb,1)]
+		for note_numb = 0 to 18
+			sound speaker, [notes(note_numb)\nleng(note_numb)]
 			pause 20
 		next
 	
-goto mode_select
+goto Startup
