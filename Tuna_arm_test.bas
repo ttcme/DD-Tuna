@@ -2,12 +2,13 @@
 
 ;in order from base to gripper
 ;Arm servo pins
-base con P4
-shoulder con P5
-elbow con P6
-wrist con P7
-hand con P8
-grip con P9
+base con P3
+shoulder con P4
+elbow con P5
+wrist con P6
+hand con P7
+grip con P8
+speaker con P9
 ;Arm position limits
 basemin con 0
 basemax con 180
@@ -22,12 +23,95 @@ handwrotmax con 180
 gripclosed con 0
 gripopen con 180
 num con 0
+;Button pins
+button_A con P12
+button_B con P13
+button_C con P14
+;Notes for speaker test
+nc con 261
+nd con 294
+ne con 329
+nf con 349
+ng con 391
+ngs con 415
+na con 440
+nas con 455
+nb con 466
+nch con 523
+ncsh con 554
+ndh con 587
+ndsh con 662
+neh con 659
+nfh con 698
+nfsh con 740
+ngh con 784
+ngsh con 830
+nah con 880
+quiet con 0
 
+notes Var long (18,1)
+nleng Var long (18)
+
+notes(0,0) = na
+notes(1,1) = 500
+notes(1,0) = na
+notes(1,1) = 500
+notes(2,0) = na
+notes(2,1) = 500
+notes(3,0) = nf
+notes(3,1) = 350
+notes(4,0) = nch
+notes(4,1) = 150
+notes(5,0) = na
+notes(5,1) = 500
+notes(6,0) = nf
+notes(6,1) = 350
+notes(7,0) = nch
+notes(7,1) = 150
+notes(8,0) = na
+notes(8,1) = 650
+
+notes(9,0) = quiet
+notes(9,1) = 150
+
+notes(10,0) = neh
+notes(10,1) = 500
+notes(11,0) = neh
+notes(11,1) = 500
+notes(12,0) = neh
+notes(12,1) = 500
+notes(13,0) = nfh
+notes(13,1) = 350
+notes(14,0) = nch
+notes(14,1) = 150
+notes(15,0) = ngs
+notes(15,1) = 500
+notes(16,0) = nf
+notes(16,1) = 350
+notes(17,0) = nch
+notes(17,1) = 150
+notes(18,0) = na
+notes(18,1) = 650
+
+
+;Initial test mode selection. Acts as a menu for the other test modes
+Startup
+Serout s_out,i9600,["Select mode",13]
+mode_select
+	if button_A = 0 
+		goto servo_test
+	elseif button_B = 0
+		goto motor_test
+	elseif button_C = 0
+		goto sound_test
+	else
+		goto mode_select
+	
 ;start of servo testing
 ;testes each servos range individually
 servo_test
 	ENABLEHSERVO
-	Serout s_out,i9600,["Setting Up",13]
+	Serout s_out,i9600,["Testing servos",13]
 	pause 1000
 	HSERVO[base\0\0,shoulder\0\0,elbow\0\0,wrist\0\0,hand\0\0,grip\0\0]
 	pause 6000
@@ -69,6 +153,8 @@ servo_test
 	pause 1000
 	HSERVO[base\0\0,shoulder\0\0,elbow\0\0,wrist\0\0,hand\0\0,grip\12000\0]
 	pause 1000
+	goto mode_select
+	
 motor_test
 ;to test thet each motor can rotate freely from full reverse to full forward
 	Serout s_out,i9600,["Beggining motor test",13]
@@ -81,5 +167,14 @@ motor_test
 	pause 200
 	serout s_out ,i9600,[DEC speed,13]
 	next
+goto mode_select
+
+sound_test ;plays the imperial march in 8 bit
+	Serout s_out,i9600,["Feel the FORCE!",13]
+	note_numb var byte
+		for note_numb 0 to 18
+			sound speaker, [notes(note_numb,0)\notes(note_numb,1)]
+			pause 20
+		next
 	
-goto servo_test
+goto mode_select
